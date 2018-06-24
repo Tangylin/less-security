@@ -4,3 +4,9 @@ spring:
     url: jdbc:mysql://localhost:3306/conzen-security?characterEncoding=utf-8&useSSL=false
     username: root
     password: tang2017
+
+less:
+  security:
+    browser:
+      login-page: /login.html # TODO 不加/会无限重定向
+      login-type: JSON
