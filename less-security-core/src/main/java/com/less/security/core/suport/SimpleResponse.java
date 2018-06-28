@@ -2,7 +2,6 @@ package com.less.security.core.suport;
 
 import lombok.Data;
 import org.springframework.http.HttpStatus;
-import reactor.core.publisher.Mono;
 
 /**
  * Rest API 响应实体
@@ -28,11 +27,11 @@ public class SimpleResponse {
      *
      * @return
      */
-    public static Mono<SimpleResponse> success() {
+    public static SimpleResponse success() {
         SimpleResponse response = new SimpleResponse();
         response.Status = HttpStatus.OK.value();
         response.result = "ok";
-        return Mono.just(response);
+        return response;
     }
 
     /**
@@ -42,10 +41,10 @@ public class SimpleResponse {
      * @param result 响应信息
      * @return
      */
-    public static Mono<SimpleResponse> fail(int status, Object result) {
+    public static SimpleResponse fail(int status, Object result) {
         SimpleResponse response = new SimpleResponse();
         response.Status = status;
         response.result = result;
-        return Mono.just(response);
+        return response;
     }
 }

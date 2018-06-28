@@ -2,16 +2,17 @@ package com.less.security.browser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.less.security.core.constants.LoginType;
 import com.less.security.core.constants.SecurityConstants;
 import com.less.security.core.properties.BrowserProperties;
 import com.less.security.core.suport.SimpleResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.web.server.DefaultServerRedirectStrategy;
 import org.springframework.security.web.server.ServerRedirectStrategy;
@@ -56,21 +57,30 @@ public class BrowserSecurityController {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public Mono<Void> requireAuthentication(ServerWebExchange exchange) throws IOException {
 
+        log.info("需要登录认证：{}");
+
         return requestCache.getRedirectUri(exchange).flatMap(uri -> {
             String path = uri.getPath();
             log.info("需要登录认证：{}", path);
 
-            if (StringUtils.endsWithIgnoreCase(path, ".html")) {
+            if (browserProperties.getLoginType() == LoginType.REDIRECT) {
+                // 登录类型为转发
+
                 return redirectStrategy.sendRedirect(exchange, URI.create(browserProperties.getLoginPage()));
             } else {
-                // 返回json数据
+                // 登录类型为json，返回json数据
+
                 ServerHttpResponse response = exchange.getResponse();
                 response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
                 DataBufferFactory factory = response.bufferFactory();
 
                 Mono<DataBuffer> body = null;
                 try {
-                    body = Mono.just(factory.wrap(objectMapper.writeValueAsBytes(SimpleResponse.fail(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase()))));
+                    ResponseEntity responseEntity = new ResponseEntity(HttpStatus.UNAUTHORIZED);
+                    SimpleResponse simpleResponse = SimpleResponse.fail(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    String content = objectMapper.writeValueAsString(responseEntity);
+                    body = Mono.just(factory.wrap(content.getBytes()));
+
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e.getMessage());
                 }

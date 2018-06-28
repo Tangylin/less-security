@@ -37,6 +37,7 @@ public class BrowserSecurityConfig {
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+
         http.formLogin()
                 .loginPage(SecurityConstants.DEFAULT_UNAUTHENTICATION_URL)
                 .authenticationSuccessHandler(lessAuthenticationSuccessHandler)
